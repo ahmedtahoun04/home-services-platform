@@ -5,7 +5,7 @@
             <div class="w-8 h-8 bg-tealPrimary rounded-full flex items-center justify-center text-white font-bold text-lg">h</div>
             <span class="font-bold text-xl text-slate-900 tracking-tight">homely<span class="text-tealPrimary">.</span></span>
         </div>
-        
+
         <!-- Nav Links -->
         <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
             <a href="{{ route('home') }}" class="text-tealPrimary font-semibold">Home</a>
@@ -15,7 +15,16 @@
 
         <!-- Auth -->
         <div class="flex items-center space-x-4">
-            <a href="#" class="text-sm font-medium text-slate-700 hover:text-tealPrimary transition">Login</a>
+            @auth
+                <span class="text-sm text-slate-600">{{ auth()->user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-sm font-medium text-slate-700 hover:text-tealPrimary transition">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-sm font-medium text-slate-700 hover:text-tealPrimary transition">Login</a>
+                <a href="{{ route('register') }}" class="bg-tealPrimary hover:bg-tealHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition">Sign Up</a>
+            @endauth
         </div>
     </div>
 </header>
