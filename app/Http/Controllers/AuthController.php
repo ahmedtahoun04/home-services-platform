@@ -27,9 +27,9 @@ class AuthController extends Controller
         $user = new User([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => $data['password'], // hashed automatically by the model cast
+            'password' => $data['password'], // hashed by the model cast
         ]);
-        // Role is always set by the server, never taken from request input.
+        // Role is always set by the server, never from request input.
         $user->role = User::ROLE_CUSTOMER;
         $user->save();
 
@@ -54,8 +54,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate(); // prevents session fixation
 
-            // Admin dashboard redirect will be added in the admin step.
-            return redirect()->intended(route('home'));
+            // Admins land on the dashboard, customers on the home page.
+            $default = $request->user()->isAdmin()
+                ? route('admin.dashboard')
+                : route('home');
+
+            return redirect()->intended($default);
         }
 
         return back()
