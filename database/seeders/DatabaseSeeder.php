@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // Demo admin (change the password before any real deployment)
         $admin = User::firstOrNew(['email' => 'admin@homely.test']);
         $admin->forceFill([
             'name' => 'Admin',
@@ -20,12 +19,13 @@ class DatabaseSeeder extends Seeder
             'role' => User::ROLE_ADMIN,
         ])->save();
 
-        // Demo customer
         $customer = User::firstOrNew(['email' => 'customer@homely.test']);
         $customer->forceFill([
             'name' => 'Test Customer',
             'password' => 'Customer12345',
             'role' => User::ROLE_CUSTOMER,
         ])->save();
+
+        $this->call(ServiceSeeder::class);
     }
 }
