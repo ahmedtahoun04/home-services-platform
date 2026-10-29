@@ -37,6 +37,7 @@ class ServiceController extends Controller
         $service = Service::create($request->validated())->refresh();
 
         return (new ServiceResource($service))
+            ->additional(['message' => 'Service created successfully.'])
             ->response()
             ->setStatusCode(201);
     }
@@ -52,10 +53,11 @@ class ServiceController extends Controller
     {
         $service->update($request->validated());
 
-        return new ServiceResource($service->refresh());
+        return (new ServiceResource($service->refresh()))
+            ->additional(['message' => 'Service updated successfully.']);
     }
 
-    /** DELETE /admin/services/{service} */
+    /** DELETE /admin/services/{service} (204, empty body) */
     public function destroy(Service $service): Response
     {
         $service->delete();
