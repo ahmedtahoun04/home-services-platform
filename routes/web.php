@@ -15,6 +15,11 @@ Route::get('/services/{id}', function ($id) {
     return view('pages.service-details', ['serviceId' => $id]);
 })->name('service.details');
 
+// Customer My Bookings View
+Route::get('/my-bookings', function () {
+    return view('pages.my-bookings');
+})->name('bookings.view');
+
 // Guests only
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
