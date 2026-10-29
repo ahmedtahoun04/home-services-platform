@@ -7,7 +7,13 @@ use App\Http\Controllers\HomeController;
 use App\Models\Service;
 use Illuminate\Support\Facades\Route;
 
+// Home & Customer Views
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Frontend Service Details & Booking View
+Route::get('/services/{id}', function ($id) {
+    return view('pages.service-details', ['serviceId' => $id]);
+})->name('service.details');
 
 // Guests only
 Route::middleware('guest')->group(function () {

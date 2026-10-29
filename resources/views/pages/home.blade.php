@@ -18,7 +18,7 @@
                     From quick repairs to deep cleaning, book trusted local professionals for all your household needs.
                 </p>
 
-                <!-- Search Box (works with the database) -->
+                <!-- Search Box -->
                 <form method="GET" action="{{ route('home') }}#services"
                       class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-2">
                     @if ($category)
@@ -33,7 +33,7 @@
                     </button>
                 </form>
 
-                <!-- Filter Chips (built from the categories in the database) -->
+                <!-- Filter Chips -->
                 @php
                     $chipActive = 'px-4 py-1.5 bg-tealPrimary text-white text-xs font-semibold rounded-full shadow-sm';
                     $chipIdle = 'px-4 py-1.5 bg-white text-slate-600 hover:bg-slate-100 text-xs font-medium rounded-full border border-slate-200 transition';
@@ -52,7 +52,7 @@
             <div class="lg:col-span-5 flex justify-center">
                 <div class="w-full max-w-md bg-teal-50 border border-teal-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center relative">
                     <div class="w-32 h-32 bg-teal-100 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-16 h-16 text-tealPrimary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        <svg class="w-16 h-16 text-tealPrimary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     </div>
                     <span class="text-xs font-bold text-tealPrimary uppercase tracking-wider mb-1">Fast & Reliable</span>
                     <h3 class="text-lg font-bold text-slate-800">Verified Professionals</h3>
@@ -62,7 +62,7 @@
         </div>
     </section>
 
-    <!-- Services Catalog Grid Section (loaded from the database) -->
+    <!-- Services Catalog Grid Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-16" id="services">
         <div class="mb-8">
             <h2 class="text-xl sm:text-2xl font-bold text-slate-900">A little help for every home</h2>
@@ -72,6 +72,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse ($services as $service)
                 <x-service-card
+                    :id="$service->id"
                     :category="$service->category"
                     :rating="(float) $service->rating"
                     :title="$service->name"
