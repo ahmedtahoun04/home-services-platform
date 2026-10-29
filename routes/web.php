@@ -1,6 +1,7 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Models\Service;
@@ -17,10 +18,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Logged-in users only
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
+// Logged-in users (Customers & Admins)
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Customer Booking APIs
+    Route::get('/bookings', [BookingController::class, 'myBookings'])->name('bookings.index');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+});
 
 // Administrators only: must be logged in AND have the admin role
 Route::middleware(['auth', 'admin'])
@@ -33,4 +38,8 @@ Route::middleware(['auth', 'admin'])
 
         // GET/POST /admin/services, GET/PUT/PATCH/DELETE /admin/services/{service}
         Route::apiResource('services', AdminServiceController::class);
+
+        // Admin Booking Management APIs
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+        Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus'])->name('bookings.status');
     });
