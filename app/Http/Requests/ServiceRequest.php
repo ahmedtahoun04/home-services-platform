@@ -22,7 +22,9 @@ class ServiceRequest extends FormRequest
             'category' => [$required, 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => [$required, 'numeric', 'min:0', 'max:99999999'],
-            'rating' => ['nullable', 'numeric', 'between:0,5'],
+            // The rating column cannot be NULL (default 0): leave the field out
+            // instead of sending null, otherwise the database would reject it.
+            'rating' => ['sometimes', 'numeric', 'between:0,5'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
