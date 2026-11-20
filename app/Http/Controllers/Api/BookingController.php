@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers\Api;
 
@@ -9,9 +9,11 @@ use App\Models\Booking;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
+    /** GET /bookings (customer: only the logged-in customer's bookings) */
     public function myBookings(Request $request)
     {
         $bookings = Booking::with('service')
@@ -22,13 +24,14 @@ class BookingController extends Controller
         return BookingResource::collection($bookings);
     }
 
+    /** POST /bookings (customer) */
     public function store(BookingRequest $request): JsonResponse
     {
-        $booking = Booking::create([
-            ...$request->validated(),
-            'user_id' => $request->user()->id,
-            'status'  => 'Pending',
-        ]);
+        $booking = new Booking($request->validated());
+        // Set by the server, never from request input:
+        $booking->user_id = $request->user()->id;
+        $booking->status = Booking::STATUS_PENDING;
+        $booking->save();
 
         $booking->load('service');
 
@@ -38,6 +41,7 @@ class BookingController extends Controller
             ->setStatusCode(201);
     }
 
+    /** GET /admin/bookings?status=Pending (admin) */
     public function index(Request $request)
     {
         $query = Booking::with(['user', 'service'])->latest();
@@ -49,13 +53,24 @@ class BookingController extends Controller
         return BookingResource::collection($query->paginate(10));
     }
 
+    /** PATCH /admin/bookings/{booking}/status (admin) */
     public function updateStatus(Request $request, Booking $booking): JsonResponse
     {
         $validated = $request->validate([
-            'status' => ['required', 'string', Rule::in(['Pending', 'Approved', 'Completed'])],
+            'status' => ['required', 'string', Rule::in(Booking::STATUSES)],
         ]);
 
-        $booking->update(['status' => $validated['status']]);
+        $newStatus = $validated['status'];
+
+        // Only Pending -> Approved -> Completed is allowed (no skipping, no going back).
+        if (! $booking->canMoveTo($newStatus)) {
+            throw ValidationException::withMessages([
+                'status' => ["A {$booking->status} booking cannot be changed to {$newStatus}."],
+            ]);
+        }
+
+        $booking->status = $newStatus;
+        $booking->save();
         $booking->load(['user', 'service']);
 
         return (new BookingResource($booking))
