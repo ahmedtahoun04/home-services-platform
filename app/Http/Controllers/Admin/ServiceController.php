@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest;
 use App\Http\Resources\ServiceResource;
+use App\Models\Booking;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,11 @@ class ServiceController extends Controller
     /** DELETE /admin/services/{service} (204, empty body) */
     public function destroy(Service $service): Response
     {
+        // A service that has bookings must be kept (bookings point to it).
+        if (Booking::where('service_id', $service->id)->exists()) {
+            abort(409, 'This service has bookings and cannot be deleted. Set it to inactive instead.');
+        }
+
         $service->delete();
 
         return response()->noContent();

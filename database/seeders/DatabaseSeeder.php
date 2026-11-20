@@ -27,5 +27,6 @@ class DatabaseSeeder extends Seeder
         ])->save();
 
         $this->call(ServiceSeeder::class);
+        $this->call(BookingSeeder::class);
     }
 }
