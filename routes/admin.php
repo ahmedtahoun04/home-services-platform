@@ -14,3 +14,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::view('manage-services', 'admin.services')->name('pages.services');
+Route::view('manage-bookings', 'admin.bookings')->name('pages.bookings');

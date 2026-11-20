@@ -44,7 +44,8 @@
                class="block px-3 py-2 rounded-lg {{ request()->routeIs('admin.dashboard') ? $navActive : $navIdle }}">Dashboard</a>
             <a href="{{ route('admin.pages.services') }}"
                class="block px-3 py-2 rounded-lg {{ request()->routeIs('admin.pages.services') ? $navActive : $navIdle }}">Services</a>
-            <span class="block px-3 py-2 rounded-lg text-slate-500 cursor-not-allowed">Bookings <span class="text-xs">(coming soon)</span></span>
+            <a href="{{ route('admin.pages.bookings') }}"
+               class="block px-3 py-2 rounded-lg {{ request()->routeIs('admin.pages.bookings') ? $navActive : $navIdle }}">Bookings</a>
         </nav>
 
         <div class="px-3 py-4 border-t border-slate-700 text-sm">
@@ -60,6 +61,7 @@
             <nav class="md:hidden flex items-center space-x-4 text-sm font-medium">
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'text-tealPrimary' : 'text-slate-600' }}">Dashboard</a>
                 <a href="{{ route('admin.pages.services') }}" class="{{ request()->routeIs('admin.pages.services') ? 'text-tealPrimary' : 'text-slate-600' }}">Services</a>
+                <a href="{{ route('admin.pages.bookings') }}" class="{{ request()->routeIs('admin.pages.bookings') ? 'text-tealPrimary' : 'text-slate-600' }}">Bookings</a>
             </nav>
             <div class="hidden md:block text-sm text-slate-500">Administration</div>
 
@@ -85,8 +87,23 @@
 <script>
     // Shared helpers for every admin page.
 
+    // Message shown when the server did not send one (see docs/API.md).
+    function fallbackMessage(status) {
+        if (status === 0) { return 'Network error. Check your connection and try again.'; }
+        if (status === 401) { return 'Please log in again.'; }
+        if (status === 403) { return 'You are not allowed to do this.'; }
+        if (status === 404) { return 'Resource not found.'; }
+        if (status === 409) { return 'This action conflicts with existing data.'; }
+        if (status === 419) { return 'Your session expired. Please reload the page and try again.'; }
+        if (status === 422) { return 'Please check the entered data.'; }
+        if (status === 429) { return 'Too many requests. Please wait a moment.'; }
+        if (status >= 500) { return 'Server error. Please try again later.'; }
+        return 'Something went wrong.';
+    }
+
     // Calls a JSON endpoint with the session cookie and the CSRF token.
-    // Returns { ok, status, data }. Errors use the unified format from docs/API.md.
+    // Always returns { ok, status, data } and data.message is always filled when
+    // the request failed, so pages can show it directly.
     window.adminApi = async function (url, options) {
         options = options || {};
         const headers = Object.assign({
@@ -100,12 +117,17 @@
             body = JSON.stringify(body);
         }
 
-        const res = await fetch(url, {
-            method: options.method || 'GET',
-            headers: headers,
-            body: body,
-            credentials: 'same-origin'
-        });
+        let res;
+        try {
+            res = await fetch(url, {
+                method: options.method || 'GET',
+                headers: headers,
+                body: body,
+                credentials: 'same-origin'
+            });
+        } catch (e) {
+            return { ok: false, status: 0, data: { message: fallbackMessage(0) } };
+        }
 
         let data = null;
         if (res.status !== 204) {
@@ -116,7 +138,20 @@
             window.location.href = '/login';
         }
 
+        if (!res.ok && (!data || !data.message)) {
+            data = Object.assign({}, data, { message: fallbackMessage(res.status) });
+        }
+
         return { ok: res.ok, status: res.status, data: data };
+    };
+
+    // The first validation message of a 422 response, or the general message.
+    window.adminErrorText = function (res) {
+        if (res.data && res.data.errors) {
+            const first = Object.keys(res.data.errors)[0];
+            if (first && res.data.errors[first][0]) { return res.data.errors[first][0]; }
+        }
+        return (res.data && res.data.message) || fallbackMessage(res.status);
     };
 
     // Escapes text before it is placed inside HTML (prevents XSS).
